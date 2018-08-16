@@ -131,8 +131,8 @@ export function cypherQuery(
     // No @cypher directive on QueryType
 
     // FIXME: support IN for multiple values -> WHERE
-    const idWherePredicate =
-      typeof _id !== 'undefined' ? `ID(${variableName})=${_id}` : '';
+    // Needed To Change This Since Neo4js _id conflicts with the same property I have in the object
+    var idWherePredicate = typeof _id !== 'undefined' ? variableName + '._id="' + _id + '"' : '';
     const nullFieldPredicates = Object.keys(nullParams).map(
       key => `${variableName}.${key} IS NULL`
     );
