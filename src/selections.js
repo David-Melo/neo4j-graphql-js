@@ -72,13 +72,14 @@ export function buildCypherSelection({
   const innerSchemaType = innerType(fieldType); // for target "type" aka label
   const { statement: customCypher } = cypherDirective(schemaType, fieldName);
 
+  // Removed This Because It Was Returning The Neo4j Node ID and Not a Property Called _id I needed
   // Database meta fields(_id)
-  if (fieldName === '_id') {
-    return recurse({
-      initial: `${initial}${fieldName}: ID(${variableName})${commaIfTail}`,
-      ...tailParams
-    });
-  }
+  //if (fieldName === '_id') {
+    //return recurse({
+      //initial: `${initial}${fieldName}: ID(${variableName})${commaIfTail}`,
+      //...tailParams
+    //});
+  //}
 
   // Main control flow
   if (isGraphqlScalarType(innerSchemaType)) {
