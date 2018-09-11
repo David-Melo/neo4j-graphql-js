@@ -7,7 +7,7 @@ A GraphQL to Cypher query execution layer for Neo4j and JavaScript GraphQL imple
 - [Read the docs](https://grandstack.io/docs/neo4j-graphql-js.html)
 - [Read the changelog](https://github.com/neo4j-graphql/neo4j-graphql-js/blob/master/CHANGELOG.md)
 
-_neo4j-graphql-js is in early development. There are rough edges and APIs may change. Please file issues for any bugs that you find or feature requests._
+_neo4j-graphql-js is in active development. There are rough edges and APIs may change. Please file issues for any bugs that you find or feature requests._
 
 ## Installation and usage
 
@@ -17,7 +17,57 @@ Install
 npm install --save neo4j-graphql-js
 ```
 
-Then call `neo4jgraphql()` in your GraphQL resolver. Your GraphQL query will be translated to Cypher and the query passed to Neo4j.
+### Usage
+
+Start with GraphQL type definitions:
+
+```javascript
+const typeDefs = `
+type Movie {
+    title: String
+    year: Int
+    imdbRating: Float
+    genres: [Genre] @relation(name: "IN_GENRE", direction: "OUT")
+}
+type Genre {
+    name: String
+    movies: [Movie] @relation(name: "IN_GENRE", direction: "IN")
+}
+`;
+```
+
+Create an executable schema with auto-generated resolvers for Query and Mutation types, ordering, pagination, and support for computed fields defined using the `@cypher` GraphQL schema directive:
+
+```
+import { makeAugmentedSchema } from 'neo4j-graphql-js';
+
+const schema = makeAugmentedSchema({ typeDefs });
+```
+
+Create a neo4j-javascript-driver instance:
+
+```
+import { v1 as neo4j } from 'neo4j-driver';
+
+const driver = neo4j.driver(
+  'bolt://localhost:7687',
+  neo4j.auth.basic('neo4j', 'letmein')
+);
+```
+
+Use your favorite JavaScript GraphQL server implementation to serve your GraphQL schema, injecting the Neo4j driver instance into the context so your data can be resolved in Neo4j:
+
+```
+import { ApolloServer } from 'apollo-server';
+
+const server = new ApolloServer({ schema, context: { driver } });
+
+server.listen(3003, '0.0.0.0').then(({ url }) => {
+  console.log(`GraphQL API ready at ${url}`);
+});
+```
+
+If you don't want auto-generated resolvers, you can also call `neo4jgraphql()` in your GraphQL resolver. Your GraphQL query will be translated to Cypher and the query passed to Neo4j.
 
 ```js
 import { neo4jgraphql } from 'neo4j-graphql-js';

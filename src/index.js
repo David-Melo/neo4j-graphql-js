@@ -16,10 +16,10 @@ import {
 } from './utils';
 import { buildCypherSelection } from './selections';
 import {
-  extractAstNodesFromSchema,
-  augmentTypeDefs,
-  createOperationMap,
-  makeAugmentedSchema
+  extractTypeMapFromSchema,
+  extractResolvers,
+  augmentedSchema,
+  makeAugmentedExecutableSchema
 } from './augmentSchema';
 import { checkRequestError } from './auth';
 
@@ -441,9 +441,39 @@ RETURN ${fromVar} {${subQuery}} AS ${fromVar};`;
 }
 
 export const augmentSchema = (schema) => {
-  const typeMap = extractAstNodesFromSchema(schema);
-  const mutationMap = createOperationMap(typeMap.Mutation);
-  const queryMap = createOperationMap(typeMap.Query);
-  const augmentedTypeMap = augmentTypeDefs(typeMap);
-  return makeAugmentedSchema(schema, augmentedTypeMap, queryMap, mutationMap);
+  let typeMap = extractTypeMapFromSchema(schema);
+  let queryResolvers = extractResolvers(schema.getQueryType());
+  let mutationResolvers = extractResolvers(schema.getMutationType());
+  return augmentedSchema(typeMap, queryResolvers, mutationResolvers);
+}
+
+export const makeAugmentedSchema = ({
+   schema,
+   typeDefs,
+   resolvers,
+   logger,
+   allowUndefinedInResolve=false,
+   resolverValidationOptions={},
+   directiveResolvers=null,
+   schemaDirectives=null,
+   parseOptions={},
+   inheritResolversFromInterfaces=false
+  }) => {
+    if(schema) {
+      return augmentSchema(schema);
+    }
+    if(!typeDefs) throw new Error(
+      'Must provide typeDefs'
+    );
+    return makeAugmentedExecutableSchema({
+      typeDefs,
+      resolvers,
+      logger,
+      allowUndefinedInResolve,
+      resolverValidationOptions,
+      directiveResolvers,
+      schemaDirectives,
+      parseOptions,
+      inheritResolversFromInterfaces
+    });
 }
