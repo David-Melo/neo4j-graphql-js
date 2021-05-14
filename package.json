@@ -4,7 +4,6 @@
   "description": "A GraphQL to Cypher query execution layer for Neo4j. ",
   "main": "./dist/index.js",
   "scripts": {
-    "postinstall": "npm run build",
     "prepare": "npm run build",
     "start": "nodemon ./example/apollo-server/movies.js --exec babel-node -e js",
     "start-middleware": "nodemon ./example/apollo-server/movies-middleware.js --exec babel-node -e js",
